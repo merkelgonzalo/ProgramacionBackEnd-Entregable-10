@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import {userModel} from '../Dao/models/users.model.js';
-import { createHash, validatePassword } from '../utils.js';
+import { createHash, validatePassword, generateToken } from '../utils.js';
 import passport from 'passport';
 
 const router = Router();
@@ -22,10 +22,16 @@ router.post('/login', passport.authenticate('login',{failureRedirect:'/faillogin
         email: req.user.email,
         age: req.user.age,
         cart: req.user.cart,
-        rol: req.user.rol
+        role: req.user.role
     }
 
-    res.send({status:"success", payload:req.user, message:"Login!!!"})
+    console.log("req.session.user: ");
+    console.log(req.session.user); //Todo OK
+    console.log("req.user: ");
+    console.log(req.user); //Todo OK
+
+    res.send({status:"success", payload:req.session.user, message:"Login!!!"})
+
 });
 
 router.get('/faillogin', async (req, res)=>{
@@ -47,6 +53,15 @@ router.get('/github', passport.authenticate('github'), async (req,res)=>{});
 router.get('/githubcallback', passport.authenticate('github',{failureRedirect:'/login'}), async (req,res)=>{
     req.session.user = req.user;
     res.redirect('/')
+});
+
+router.get('/current', (req, res) => {
+    //console.log("req.user: "+ req.user);
+    //console.log("req.session.user: "+ req.session.user);
+
+    if(!req.session.user) return res.status(400).send({status:"error", error: 'No user currently'});
+    
+    res.send({status:"success", payload:req.session.user, message:"Current user!!!"})
 });
 
 export default router;

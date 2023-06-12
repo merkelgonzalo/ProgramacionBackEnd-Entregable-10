@@ -22,7 +22,7 @@ const initializePassport = () => {
                         email,
                         age,
                         password: createHash(password),
-                        rol: "user"
+                        role: "user"
                     };
                     let result = await userModel.create(newUser);
                     return done(null, result);
@@ -33,7 +33,7 @@ const initializePassport = () => {
     }));
 
     passport.serializeUser((user, done) => {
-        done(null, user._id)
+        done(null, user.id)
     });
 
     passport.deserializeUser(async (id, done) => {
@@ -44,19 +44,18 @@ const initializePassport = () => {
                 last_name: 'Del Sistema',
                 email: email,
                 age: 99,
-                rol: 'admin'
+                role: 'admin'
             };
         }else{
             const user = await userModel.findById(id);
         }
+        console.log("user de deserializeUser: "+user);
         done(null, user)
     });
 
     passport.use('login', new LocalStrategy({usernameField:'email'}, async (email, password, done)=>{
-
         try {
             let user;
-            console.log("Login de passport.config")
             if(email === "adminCoder@coder.com" && password === "adminCod3r123"){
                 user = {
                     _id: 0, //A modo de prueba, teniendo en cuenta que ningun usuario va a tener ese ID, para serializar
@@ -64,7 +63,7 @@ const initializePassport = () => {
                     last_name: 'Del Sistema',
                     email: email,
                     age: 99,
-                    rol: 'admin'
+                    role: 'admin'
                 };
                 return done(null, user);
             }else{
@@ -79,11 +78,9 @@ const initializePassport = () => {
                 }
             }
         } catch (error) {
-            console.log("Todo RE MAL")
-            return done("Error ocurred when try to login: " + error);
-            
+            console.log("Todo RE MAL");
+            return done("Error ocurred when try to login: " + error);   
         }
-
     }));
 
     passport.use('github', new GitHubStrategy({
@@ -110,7 +107,7 @@ const initializePassport = () => {
                             email: email,
                             age: 18,
                             password: '',
-                            rol: 'user'
+                            role: 'user'
                     }
                     const result = await userModel.create(newUser);
                     done(null, result);
@@ -122,6 +119,29 @@ const initializePassport = () => {
             }
         }
     ));
+      
+    // passport.use('current', new LocalStrategy(async (email, password, done)=>{
+    //     try {
+    //         console.log("entró al config");
+    //         let user;
+    //         if(!email){
+    //             return done(null, false);
+    //         }else{
+    //             user = await userModel.findOne({email});
+    //             if(!user){
+    //                 console.log("El usuario no existe")
+    //                 return done(null, false);
+    //             }else{
+    //                 console.log("Todo ok")
+    //                 return done(null, user);
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.log("Todo RE MAL");
+    //         return done("Error ocurred when try to see current user: " + error);   
+    //     }
+    // }));
+
 }
 
 export default initializePassport;
